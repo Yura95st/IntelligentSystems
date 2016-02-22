@@ -41,7 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IrisItem.cs" />
+    <Compile Include="Parsers\IrisDataParser.cs" />
+    <Compile Include="Model\IrisItem.cs" />
+    <Compile Include="MaxMinClustering.cs" />
+    <Compile Include="Model\Cluster.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Guard.cs" />
