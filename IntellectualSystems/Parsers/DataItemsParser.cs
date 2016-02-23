@@ -10,20 +10,20 @@
     using IntellectualSystems.Model;
     using IntellectualSystems.Utils;
 
-    internal class IrisDataParser
+    internal class DataItemsParser
     {
-        public static IEnumerable<IrisItem> ParseItemsFromResource(string resourceName)
+        public static IEnumerable<DataItem> ParseItemsFromResource(string resourceName)
         {
             Guard.NotNull(resourceName, "resourceName");
 
             Stream stream = Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream(resourceName);
 
-            foreach (string line in IrisDataParser.ReadLines(() => stream, Encoding.UTF8))
+            foreach (string line in DataItemsParser.ReadLines(() => stream, Encoding.UTF8))
             {
                 string[] lineParts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                yield return new IrisItem(int.Parse(lineParts[0]), Array.ConvertAll(lineParts.Skip(1)
+                yield return new DataItem(int.Parse(lineParts[0]), Array.ConvertAll(lineParts.Skip(1)
                     .ToArray(), Double.Parse));
             }
         }

@@ -13,10 +13,15 @@
 
         private static void Main(string[] args)
         {
-            IList<IrisItem> irisItems = IrisDataParser.ParseItemsFromResource(Program.irisDataResourceName)
+            List<DataItem> dataItems = DataItemsParser.ParseItemsFromResource(Program.irisDataResourceName)
                 .ToList();
 
-            foreach (Cluster cluster in MaxMinClustering.PerformClustering(irisItems))
+            //foreach (var cluster in MaxMinClustering.PerformClustering(dataItems))
+            //{
+            //    Console.WriteLine(cluster);
+            //}
+
+            foreach (Cluster cluster in KMeansClustering.PerformClustering(dataItems, 3))
             {
                 Console.WriteLine(cluster);
             }

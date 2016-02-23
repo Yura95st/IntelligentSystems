@@ -8,36 +8,25 @@
 
     internal class Cluster
     {
-        private readonly ISet<IrisItem> _items;
-
-        public Cluster(IrisItem center)
+        public Cluster(DataItem center, IEnumerable<DataItem> dataItems)
         {
             Guard.NotNull(center, "center");
+            Guard.NotNull(dataItems, "dataItems");
 
             this.Center = center;
-
-            this._items = new HashSet<IrisItem>();
+            this.Items = dataItems.ToList();
         }
 
-        public IrisItem Center
+        public DataItem Center
+        {
+            get;
+            set;
+        }
+
+        public IEnumerable<DataItem> Items
         {
             get;
             private set;
-        }
-
-        public IEnumerable<IrisItem> Items
-        {
-            get
-            {
-                return this._items.ToList();
-            }
-        }
-
-        public void AddItem(IrisItem item)
-        {
-            Guard.NotNull(item, "item");
-
-            this._items.Add(item);
         }
 
         public override string ToString()
@@ -47,7 +36,7 @@
             sb.AppendLine(string.Format("Cluster's count: {0}", this.Items.Count()));
             sb.AppendLine(string.Format("Cluster's center: {0}", this.Center));
 
-            foreach (IrisItem irisItem in this.Items)
+            foreach (DataItem irisItem in this.Items)
             {
                 sb.AppendLine(string.Format("\t{0}", irisItem));
             }

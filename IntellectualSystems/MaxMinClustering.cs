@@ -9,129 +9,118 @@
 
     internal static class MaxMinClustering
     {
-        public static IEnumerable<Cluster> PerformClustering(IEnumerable<IrisItem> items)
+        public static IEnumerable<Cluster> PerformClustering(IEnumerable<DataItem> dataItems)
         {
-            Guard.NotNull(items, "items");
+            Guard.NotNull(dataItems, "dataItems");
 
-            List<IrisItem> irisItems = items.ToList();
+            List<DataItem> nonClusteredItems = dataItems.ToList();
 
-            List<IrisItem> clustersCenters = new List<IrisItem>();
+            List<DataItem> clusterCenters = new List<DataItem>();
 
-            clustersCenters.Add(irisItems[0]);
-            irisItems.Remove(irisItems[0]);
+            clusterCenters.Add(nonClusteredItems[0]);
+            nonClusteredItems.Remove(nonClusteredItems[0]);
 
             double maxDistance = 0;
-            IrisItem secondCenter = null;
+            DataItem secondCenter = null;
 
-            foreach (IrisItem irisItem in irisItems)
+            foreach (DataItem dataItem in nonClusteredItems)
             {
-                double distance = MaxMinClustering.GetEuclideanDistance(clustersCenters[0], irisItem);
+                double distance = ClusteringUtils.GetEuclideanDistance(clusterCenters[0], dataItem);
 
                 if (maxDistance < distance)
                 {
                     maxDistance = distance;
-                    secondCenter = irisItem;
+                    secondCenter = dataItem;
                 }
             }
 
-            clustersCenters.Add(secondCenter);
-            irisItems.Remove(secondCenter);
+            clusterCenters.Add(secondCenter);
+            nonClusteredItems.Remove(secondCenter);
 
-            while (irisItems.Any())
+            while (nonClusteredItems.Any())
             {
-                Dictionary<IrisItem, List<double>> distancesDictionary = new Dictionary<IrisItem, List<double>>();
+                Dictionary<DataItem, List<double>> distancesDictionary = new Dictionary<DataItem, List<double>>();
 
-                foreach (IrisItem irisItem in irisItems)
+                foreach (DataItem irisItem in nonClusteredItems)
                 {
                     List<double> distances = new List<double>();
 
-                    foreach (IrisItem clustersCenter in clustersCenters)
+                    foreach (DataItem clustersCenter in clusterCenters)
                     {
-                        distances.Add(MaxMinClustering.GetEuclideanDistance(clustersCenter, irisItem));
+                        distances.Add(ClusteringUtils.GetEuclideanDistance(clustersCenter, irisItem));
                     }
 
                     distancesDictionary.Add(irisItem, distances);
                 }
 
-                List<KeyValuePair<IrisItem, double>> minDistances = new List<KeyValuePair<IrisItem, double>>();
+                List<KeyValuePair<DataItem, double>> minDistances = new List<KeyValuePair<DataItem, double>>();
 
-                foreach (KeyValuePair<IrisItem, List<double>> keyValuePair in distancesDictionary)
+                foreach (KeyValuePair<DataItem, List<double>> keyValuePair in distancesDictionary)
                 {
-                    minDistances.Add(new KeyValuePair<IrisItem, double>(keyValuePair.Key, keyValuePair.Value.Min()));
+                    minDistances.Add(new KeyValuePair<DataItem, double>(keyValuePair.Key, keyValuePair.Value.Min()));
                 }
 
-                KeyValuePair<IrisItem, double> potentialCenter = minDistances.OrderByDescending(i => i.Value)
+                KeyValuePair<DataItem, double> potentialCenter = minDistances.OrderByDescending(i => i.Value)
                     .First();
 
-                if (MaxMinClustering.IsGreaterThanTypicalDistance(potentialCenter.Value, clustersCenters))
-                {
-                    clustersCenters.Add(potentialCenter.Key);
-                    irisItems.Remove(potentialCenter.Key);
-                }
-                else
+                if (!MaxMinClustering.IsGreaterThanTypicalDistance(potentialCenter.Value, clusterCenters))
                 {
                     break;
                 }
+
+                clusterCenters.Add(potentialCenter.Key);
+                nonClusteredItems.Remove(potentialCenter.Key);
             }
 
-            return MaxMinClustering.BuildClusters(clustersCenters, irisItems);
+            return MaxMinClustering.BuildClusters(clusterCenters, nonClusteredItems);
         }
 
-        private static IEnumerable<Cluster> BuildClusters(IList<IrisItem> clustersCenters, IList<IrisItem> irisItems)
+        private static IEnumerable<Cluster> BuildClusters(IList<DataItem> clusterCenters, IList<DataItem> dataItems)
         {
-            List<Cluster> clusters = new List<Cluster>();
+            Dictionary<int, IList<DataItem>> clustersDictionary = new Dictionary<int, IList<DataItem>>();
 
-            foreach (IrisItem clustersCenter in clustersCenters)
+            foreach (DataItem dataItem in dataItems)
             {
-                clusters.Add(new Cluster(clustersCenter));
-            }
+                double minDistance = Double.MaxValue;
+                int clusterId = -1;
 
-            foreach (IrisItem irisItem in irisItems)
-            {
-                double minDistance = double.MaxValue;
-                Cluster hostCluster = null;
-
-                foreach (Cluster cluster in clusters)
+                for (int i = 0; i < clusterCenters.Count; i++)
                 {
-                    double distance = MaxMinClustering.GetEuclideanDistance(cluster.Center, irisItem);
+                    double distance = ClusteringUtils.GetEuclideanDistance(clusterCenters[i], dataItem);
 
                     if (minDistance > distance)
                     {
                         minDistance = distance;
-                        hostCluster = cluster;
+                        clusterId = i;
                     }
                 }
 
-                hostCluster.AddItem(irisItem);
-            }
-
-            return clusters;
-        }
-
-        private static double GetEuclideanDistance(IrisItem itemOne, IrisItem itemTwo)
-        {
-            double sum = 0;
-
-            for (int i = 0; i < itemOne.Data.Length; i++)
-            {
-                sum += Math.Pow(itemOne.Data[i] - itemTwo.Data[i], 2);
-            }
-
-            return Math.Sqrt(sum);
-        }
-
-        private static bool IsGreaterThanTypicalDistance(double distance, IList<IrisItem> clustersCenters)
-        {
-            double clustersDistancesSum = 0;
-            for (int i = 0; i < clustersCenters.Count; i++)
-            {
-                for (int j = i + 1; j < clustersCenters.Count; j++)
+                if (!clustersDictionary.ContainsKey(clusterId))
                 {
-                    clustersDistancesSum += MaxMinClustering.GetEuclideanDistance(clustersCenters[i], clustersCenters[j]);
+                    clustersDictionary.Add(clusterId, new List<DataItem>());
+                }
+
+                clustersDictionary[clusterId].Add(dataItem);
+            }
+
+            for (int i = 0; i < clusterCenters.Count; i++)
+            {
+                yield return new Cluster(clusterCenters[i], clustersDictionary[i]);
+            }
+        }
+
+        private static bool IsGreaterThanTypicalDistance(double distance, IList<DataItem> clusterCenters)
+        {
+            double distancesSum = 0;
+            for (int i = 0; i < clusterCenters.Count; i++)
+            {
+                for (int j = i + 1; j < clusterCenters.Count; j++)
+                {
+                    distancesSum += ClusteringUtils.GetEuclideanDistance(clusterCenters[i], clusterCenters[j]);
                 }
             }
 
-            return distance > 0.5 * clustersDistancesSum / clustersCenters.Count;
+            return distance > 0.5 * distancesSum / clusterCenters.Count;
         }
     }
 }
