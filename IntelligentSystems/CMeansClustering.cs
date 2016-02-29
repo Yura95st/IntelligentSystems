@@ -1,13 +1,13 @@
-﻿namespace IntellectualSystems
+﻿namespace IntelligentSystems
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    using IntellectualSystems.Model;
-    using IntellectualSystems.Utils;
+    using IntelligentSystems.Model;
+    using IntelligentSystems.Utils;
 
-    internal static class KMeansClustering
+    internal static class CMeansClustering
     {
         private static readonly double alpha = 0.005;
 
@@ -70,7 +70,7 @@
                 for (int i = 0; i < clusterCenters.Count; i++)
                 {
                     if (ClusteringUtils.GetEuclideanDistance(clusterCenters[i], newClusterCenters[i])
-                        > KMeansClustering.alpha)
+                        > CMeansClustering.alpha)
                     {
                         centersChanged = true;
                         break;

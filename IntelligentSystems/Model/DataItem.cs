@@ -1,8 +1,8 @@
-﻿namespace IntellectualSystems.Model
+﻿namespace IntelligentSystems.Model
 {
     using System.Linq;
 
-    using IntellectualSystems.Utils;
+    using IntelligentSystems.Utils;
 
     internal class DataItem
     {

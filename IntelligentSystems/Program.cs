@@ -1,15 +1,15 @@
-﻿namespace IntellectualSystems
+﻿namespace IntelligentSystems
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    using IntellectualSystems.Model;
-    using IntellectualSystems.Parsers;
+    using IntelligentSystems.Model;
+    using IntelligentSystems.Parsers;
 
     internal class Program
     {
-        private static readonly string irisDataResourceName = "IntellectualSystems.iris.dat.txt";
+        private static readonly string irisDataResourceName = "IntelligentSystems.iris.dat.txt";
 
         private static void Main(string[] args)
         {
@@ -21,7 +21,7 @@
             //    Console.WriteLine(cluster);
             //}
 
-            foreach (Cluster cluster in KMeansClustering.PerformClustering(dataItems, 3))
+            foreach (Cluster cluster in CMeansClustering.PerformClustering(dataItems, 3))
             {
                 Console.WriteLine(cluster);
             }

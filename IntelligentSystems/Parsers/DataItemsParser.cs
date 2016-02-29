@@ -1,4 +1,4 @@
-﻿namespace IntellectualSystems.Parsers
+﻿namespace IntelligentSystems.Parsers
 {
     using System;
     using System.Collections.Generic;
@@ -7,8 +7,8 @@
     using System.Reflection;
     using System.Text;
 
-    using IntellectualSystems.Model;
-    using IntellectualSystems.Utils;
+    using IntelligentSystems.Model;
+    using IntelligentSystems.Utils;
 
     internal class DataItemsParser
     {

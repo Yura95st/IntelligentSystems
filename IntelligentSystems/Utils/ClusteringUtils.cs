@@ -1,8 +1,8 @@
-﻿namespace IntellectualSystems.Utils
+﻿namespace IntelligentSystems.Utils
 {
     using System;
 
-    using IntellectualSystems.Model;
+    using IntelligentSystems.Model;
 
     internal static class ClusteringUtils
     {

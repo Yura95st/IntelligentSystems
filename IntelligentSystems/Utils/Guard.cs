@@ -1,4 +1,4 @@
-﻿namespace IntellectualSystems.Utils
+﻿namespace IntelligentSystems.Utils
 {
     using System;
 
