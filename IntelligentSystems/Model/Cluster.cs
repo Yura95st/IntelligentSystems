@@ -10,11 +10,14 @@
     {
         public Cluster(DataItem center, IEnumerable<DataItem> dataItems)
         {
-            Guard.NotNull(center, "center");
             Guard.NotNull(dataItems, "dataItems");
 
             this.Center = center;
             this.Items = dataItems.ToList();
+        }
+
+        public Cluster(IEnumerable<DataItem> dataItems): this(null, dataItems)
+        {
         }
 
         public DataItem Center
@@ -34,7 +37,11 @@
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(string.Format("Cluster's count: {0}", this.Items.Count()));
-            sb.AppendLine(string.Format("Cluster's center: {0}", this.Center));
+
+            if (this.Center != null)
+            {
+                sb.AppendLine(string.Format("Cluster's center: {0}", this.Center));
+            }
 
             foreach (DataItem irisItem in this.Items)
             {
