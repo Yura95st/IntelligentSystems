@@ -21,10 +21,12 @@
             //    Console.WriteLine(cluster);
             //}
 
-            foreach (Cluster cluster in CMeansClustering.PerformClustering(dataItems, 3))
-            {
-                Console.WriteLine(cluster);
-            }
+            //foreach (Cluster cluster in CMeansClustering.PerformClustering(dataItems, 3))
+            //{
+            //    Console.WriteLine(cluster);
+            //}
+
+            PerceptronLearning.PerformLearning(dataItems, 3);
         }
     }
 }
