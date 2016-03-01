@@ -23,8 +23,11 @@
             {
                 string[] lineParts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                yield return new DataItem(int.Parse(lineParts[0]), Array.ConvertAll(lineParts.Skip(1)
-                    .ToArray(), Double.Parse));
+                if (lineParts.Length >= 2)
+                {
+                    yield return new DataItem(int.Parse(lineParts[0]), Array.ConvertAll(lineParts.Skip(1)
+                        .ToArray(), Double.Parse));
+                }
             }
         }
 
