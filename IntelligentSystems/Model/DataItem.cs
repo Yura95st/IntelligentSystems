@@ -49,6 +49,11 @@
             return new DataItem(-1, values);
         }
 
+        public static DataItem operator /(DataItem dataItem, double num)
+        {
+            return dataItem * (1.0 / num);
+        }
+
         public static DataItem operator *(DataItem dataItem, double num)
 
         {
