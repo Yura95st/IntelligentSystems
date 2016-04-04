@@ -1,15 +1,20 @@
 ﻿namespace IntelligentSystems
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
 
     using IntelligentSystems.Model;
     using IntelligentSystems.Utils;
 
+    using MathNet.Numerics.LinearAlgebra;
+
     internal class BayesСlassifierWithNormalDistribution
     {
-        public static IList<IList<double>> PerformLearning(IList<DataItem> dataItems)
+        private static readonly MatrixBuilder<double> matrixBuilder = Matrix<double>.Build;
+
+        private static readonly VectorBuilder<double> vectorBuilder = Vector<double>.Build;
+
+        public static IList<IList<double>> BuildDecisionFunctions(IList<DataItem> dataItems)
         {
             Guard.NotNull(dataItems, "dataItems");
 
@@ -20,79 +25,77 @@
                 dataItems.GroupBy(item => item.ClassId, (key, groupedItems) => groupedItems.ToList())
                     .ToList();
 
+            List<Vector<double>> meanVectors = BayesСlassifierWithNormalDistribution.GetMeanVectors(grouppedDataItems);
+
+            List<Matrix<double>> covarianceMatrices =
+                BayesСlassifierWithNormalDistribution.GetCovarianceMatrices(grouppedDataItems, meanVectors, valuesDimension);
+
+            List<Matrix<double>> inverseCovarianceMatrices = covarianceMatrices.Select(matrix => matrix.Inverse())
+                .ToList();
+
+            List<IList<double>> coefficients = BayesСlassifierWithNormalDistribution.GetCoefficientsVectors(
+                grouppedDataItems, meanVectors, inverseCovarianceMatrices);
+
+            return coefficients;
+        }
+
+        private static List<IList<double>> GetCoefficientsVectors(IList<List<DataItem>> grouppedDataItems,
+                                                                  IList<Vector<double>> meanVectors,
+                                                                  IList<Matrix<double>> inverseCovarianceMatrices)
+        {
             List<IList<double>> coefficients = new List<IList<double>>(grouppedDataItems.Count);
 
             for (int i = 0; i < grouppedDataItems.Count; i++)
             {
-                coefficients.Add(new double[valuesDimension + 1]);
-            }
+                Vector<double> v = inverseCovarianceMatrices[i] * meanVectors[i];
 
-            IList<IList<double>> meanVectors = BayesСlassifierWithNormalDistribution.GetMeanVectors(grouppedDataItems);
-
-            IList<IList<IList<double>>> covarianceMatrices =
-                BayesСlassifierWithNormalDistribution.GetCovarianceMatrices(grouppedDataItems, meanVectors);
-
-            List<IList<IList<double>>> inverseCovarianceMatrices =
-                covarianceMatrices.Select(BayesСlassifierWithNormalDistribution.GetInverseMatrix)
-                    .ToList();
-
-            for (int i = 0; i < grouppedDataItems.Count; i++)
-            {
-                IList<double> coefficient = coefficients[i];
-
-                for (int j = 0; j < coefficient.Count - 1; j++)
+                IList<double> coefficientsVector = new double[v.Count + 1];
+                for (int j = 0; j < v.Count; j++)
                 {
-                    coefficient[j] = inverseCovarianceMatrices[i][j].Aggregate((x, y) => x * y) * meanVectors[i][j];
+                    coefficientsVector[j + 1] = v[j];
                 }
 
-                coefficient[coefficient.Count - 1] = -0.5
-                    * BayesСlassifierWithNormalDistribution.MultiplyTransposedVectorOnMatrix(meanVectors[i],
-                        inverseCovarianceMatrices[i])
-                        .Select((elem, index) => elem * meanVectors[i][index])
-                        .Sum();
+                coefficientsVector[0] = -0.5
+                    * (meanVectors[i].ToRowMatrix() * inverseCovarianceMatrices[i] * meanVectors[i])[0];
+
+                coefficients.Add(coefficientsVector);
             }
 
             return coefficients;
         }
 
-        private static IList<IList<IList<double>>> GetCovarianceMatrices(IList<List<DataItem>> grouppedDataItems,
-                                                                         IList<IList<double>> meanVectors)
+        private static List<Matrix<double>> GetCovarianceMatrices(IList<List<DataItem>> grouppedDataItems,
+                                                                  IList<Vector<double>> meanVectors, int valuesDimension)
         {
-            List<IList<IList<double>>> covarianceMatrices = new List<IList<IList<double>>>(grouppedDataItems.Count);
+            List<Matrix<double>> covarianceMatrices = new List<Matrix<double>>(grouppedDataItems.Count);
 
             for (int i = 0; i < grouppedDataItems.Count; i++)
             {
-                IList<IList<double>> covarianceMatrix = new List<IList<double>>();
+                Matrix<double> covarianceMatrix = BayesСlassifierWithNormalDistribution.matrixBuilder.Dense(valuesDimension,
+                    valuesDimension);
 
                 List<DataItem> dataItemsGroup = grouppedDataItems[i];
 
                 foreach (DataItem dataItem in dataItemsGroup)
                 {
-                    covarianceMatrix = BayesСlassifierWithNormalDistribution.SumTwoMatrixes(covarianceMatrix,
-                        BayesСlassifierWithNormalDistribution.MultiplyVectorOnTransposedVector(dataItem.Values,
-                            dataItem.Values));
+                    Vector<double> v1 = BayesСlassifierWithNormalDistribution.vectorBuilder.DenseOfEnumerable(dataItem.Values);
+
+                    covarianceMatrix += v1.ToColumnMatrix() * v1.ToRowMatrix();
                 }
 
-                covarianceMatrix = BayesСlassifierWithNormalDistribution.MultiplyMatrixByNumber(covarianceMatrix,
-                    dataItemsGroup.Count);
+                covarianceMatrix /= dataItemsGroup.Count;
 
-                covarianceMatrices.Add(BayesСlassifierWithNormalDistribution.SumTwoMatrixes(covarianceMatrix,
-                    BayesСlassifierWithNormalDistribution.MultiplyMatrixByNumber(
-                        BayesСlassifierWithNormalDistribution.MultiplyVectorOnTransposedVector(meanVectors[i], meanVectors[i]),
-                        -1)));
+                covarianceMatrix -= meanVectors[i].ToColumnMatrix() * meanVectors[i].ToRowMatrix();
+
+                covarianceMatrices.Add(covarianceMatrix);
             }
 
             return covarianceMatrices;
         }
 
-        private static IList<IList<double>> GetInverseMatrix(IList<IList<double>> matrixToInverse)
+        private static List<Vector<double>> GetMeanVectors(IList<List<DataItem>> grouppedDataItems)
         {
-            throw new NotImplementedException();
-        }
-
-        private static IList<IList<double>> GetMeanVectors(IList<List<DataItem>> grouppedDataItems)
-        {
-            List<IList<double>> meanVectors = new List<IList<double>>(grouppedDataItems.Count);
+            List<Vector<double>> meanVectors = new List<Vector<double>>(grouppedDataItems.Count);
 
             foreach (List<DataItem> dataItemsGroup in grouppedDataItems)
             {
@@ -105,75 +108,10 @@
 
                 meanDataItem /= dataItemsGroup.Count;
 
-                meanVectors.Add(meanDataItem.Values);
+                meanVectors.Add(BayesСlassifierWithNormalDistribution.vectorBuilder.DenseOfArray(meanDataItem.Values));
             }
 
             return meanVectors;
-        }
-
-        private static IList<IList<double>> MultiplyMatrixByNumber(IList<IList<double>> matrix, double number)
-        {
-            List<IList<double>> result = new List<IList<double>>(matrix);
-
-            for (int i = 0; i < result.Count; i++)
-            {
-                for (int j = 0; j < result[i].Count; j++)
-                {
-                    result[i][j] *= number;
-                }
-            }
-
-            return result;
-        }
-
-        private static IList<double> MultiplyTransposedVectorOnMatrix(IList<double> vectorToTranspose,
-                                                                      IList<IList<double>> matrix)
-        {
-            List<double> result = new List<double>();
-
-            for (int i = 0; i < matrix.First()
-                .Count; i++)
-            {
-                result[i] = vectorToTranspose.Select((item, index) => item * matrix[index][i])
-                    .Sum();
-            }
-
-            return result;
-        }
-
-        private static IList<IList<double>> MultiplyVectorOnTransposedVector(IList<double> vector,
-                                                                             IList<double> vectorToTranspose)
-        {
-            List<IList<double>> result = new List<IList<double>>(vector.Count);
-
-            foreach (double rowItem in vector)
-            {
-                List<double> row = new List<double>();
-
-                foreach (double columnItem in vectorToTranspose)
-                {
-                    row.Add(rowItem * columnItem);
-                }
-
-                result.Add(row);
-            }
-
-            return result;
-        }
-
-        private static IList<IList<double>> SumTwoMatrixes(IList<IList<double>> m1, IList<IList<double>> m2)
-        {
-            List<IList<double>> result = new List<IList<double>>(m1);
-
-            for (int i = 0; i < m2.Count; i++)
-            {
-                for (int j = 0; j < m2[i].Count; j++)
-                {
-                    result[i][j] += m2[i][j];
-                }
-            }
-
-            return result;
         }
     }
 }
