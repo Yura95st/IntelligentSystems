@@ -13,9 +13,9 @@
     {
         private static readonly int classesCount = 3;
 
-        private static readonly string dataResourceName = "IntelligentSystems.lab_4.dat.txt";
+        private static readonly string dataResourceName = "IntelligentSystems.Data.lab_4.dat.txt";
 
-        private static readonly string irisDataResourceName = "IntelligentSystems.iris.dat.txt";
+        private static readonly string irisDataResourceName = "IntelligentSystems.Data.iris.dat.txt";
 
         private static string GetFunctionStringFromVector(IList<double> vector)
         {

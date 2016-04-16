@@ -58,10 +58,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="iris.dat.txt" />
+    <EmbeddedResource Include="Data\iris.dat.txt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="lab_4.dat.txt" />
+    <EmbeddedResource Include="Data\lab_4.dat.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
