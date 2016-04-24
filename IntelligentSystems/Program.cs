@@ -9,13 +9,17 @@
     using IntelligentSystems.Parsers;
     using IntelligentSystems.Utils;
 
+    using MathNet.Numerics.LinearAlgebra;
+
     internal class Program
     {
         private static readonly int classesCount = 3;
 
-        private static readonly string dataResourceName = "IntelligentSystems.Data.lab_4.dat.txt";
-
         private static readonly string irisDataResourceName = "IntelligentSystems.Data.iris.dat.txt";
+
+        private static readonly string lab4DataResourceName = "IntelligentSystems.Data.lab_4.dat.txt";
+
+        private static readonly string lab5DataResourceName = "IntelligentSystems.Data.lab_5.dat.txt";
 
         private static string GetFunctionStringFromVector(IList<double> vector)
         {
@@ -74,8 +78,11 @@
             }
         }
 
-        private static void Lab4(IList<DataItem> dataItems)
+        private static void Lab4()
         {
+            List<DataItem> dataItems = DataItemsParser.ParseItemsFromResource(Program.lab4DataResourceName)
+                .ToList();
+
             IList<IList<double>> coefficientsVectors = BayesСlassifierWithNormalDistribution.BuildDecisionFunctions(dataItems);
 
             Console.WriteLine("Functions:");
@@ -84,6 +91,24 @@
             {
                 Console.WriteLine();
                 Console.WriteLine(Program.GetFunctionStringFromVector(coefficientsVector));
+            }
+        }
+
+        private static void Lab5()
+        {
+            List<DataItem> dataItems = DataItemsParser.ParseItemsFromResource(Program.lab5DataResourceName)
+                .ToList();
+
+            IList<Vector<double>> coefficientsVectors =
+                BayesСlassifierWithUnknownDistribution.BuildDecisionFunctions(dataItems);
+
+            Console.WriteLine("Functions:");
+
+            foreach (IList<double> coefficientsVector in coefficientsVectors)
+            {
+                Console.WriteLine();
+                Console.WriteLine(
+                    BayesСlassifierWithUnknownDistribution.GetFunctionStringFromDecisionFunction(coefficientsVector));
             }
         }
 
@@ -96,10 +121,8 @@
             //Program.Lab2(dataItems);
             //Program.Lab3(dataItems);
 
-            List<DataItem> dataItems = DataItemsParser.ParseItemsFromResource(Program.dataResourceName)
-                .ToList();
-
-            Program.Lab4(dataItems);
+            //Program.Lab4();
+            Program.Lab5();
         }
     }
 }

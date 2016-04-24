@@ -38,10 +38,12 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BayesСlassifierWithNormalDistribution.cs" />
+    <Compile Include="BayesСlassifierWithUnknownDistribution.cs" />
     <Compile Include="CMeansClustering.cs" />
     <Compile Include="Model\Cluster.cs" />
     <Compile Include="Model\DataItem.cs" />
@@ -62,6 +64,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Data\lab_4.dat.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Data\lab_5.dat.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
